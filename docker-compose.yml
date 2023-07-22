@@ -1,0 +1,56 @@
+version: "3"
+
+networks:
+  proxy:
+    external: true
+  internal:
+    external: false
+
+services:
+  
+  bimbon_frontend:
+   build:
+      context: ./front_end
+      dockerfile: Dockerfile
+   container_name: bimbon_frontend
+   networks:
+    - proxy
+    - internal
+   volumes:
+    -  ./front_end:/usr/app
+    - /usr/app/node_modules
+   depends_on:
+    - bimbon_backend
+   stdin_open: true
+   tty: true
+   ports:
+    - 3000:3000
+
+  bimbon_backend:
+   build:
+      context: ./back_end
+      dockerfile: Dockerfile
+   container_name: bimbon_backend
+   networks:
+    - proxy
+    - internal
+   volumes:
+    - ./back_end:/usr/app
+    - /usr/app/node_modules
+   depends_on:
+    - bimbon_db
+   ports:
+    - 8000:8000
+  bimbon_db:
+    image: postgres
+    ports:
+      - 27017:27017
+    container_name: bimbon_db
+    networks:
+      - internal
+    volumes:
+      - bimbon_db-data:/data/db
+
+volumes:
+  bimbon_db-data:
+    driver: local
